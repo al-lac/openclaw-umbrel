@@ -12,6 +12,7 @@ const CONFIG_FILE = path.join(CONFIG_DIR, 'openclaw.json');
 const ENV_FILE = path.join(CONFIG_DIR, '.env');
 const PORT = parseInt(process.env.SETUP_PORT || '18789');
 const OPENCLAW_PORT = 18790; // Internal port for OpenClaw gateway
+const SKELETON_DIR = '/home-skeleton';
 
 let openclawProcess = null;
 
@@ -68,43 +69,49 @@ function ensureConfigDir() {
   }
 }
 
-async function ensureHomebrew(attempt = 1) {
-  const maxAttempts = 5;
-  const brewPath = path.join(process.env.HOME, '.linuxbrew', 'bin', 'brew');
-
+// Check if a directory is empty
+async function isDirEmpty(dirPath) {
   try {
-    await fsp.access(brewPath);
-    console.log('Homebrew already installed');
-    return;
+    const entries = await fsp.readdir(dirPath);
+    return entries.length === 0;
   } catch {
-    // brew not found, continue with install
+    return true; // If we can't read it, treat as empty
   }
+}
 
-  console.log(`Installing Homebrew to persistent volume (attempt ${attempt}/${maxAttempts})...`);
-  const homebrewDir = path.join(process.env.HOME, '.linuxbrew');
-  const repoDir = path.join(homebrewDir, 'Homebrew');
+// Copy files from /home-skeleton to $HOME if they don't exist or are empty
+async function initializeHome() {
+  const homeDir = process.env.HOME;
 
   try {
-    // Clean up any partial install
-    await fsp.rm(homebrewDir, { recursive: true, force: true }).catch(() => {});
+    const entries = await fsp.readdir(SKELETON_DIR, { withFileTypes: true });
 
-    await fsp.mkdir(homebrewDir, { recursive: true });
-    console.log('Cloning Homebrew repository...');
-    await execAsync(`git clone --depth=1 https://github.com/Homebrew/brew ${repoDir}`);
-    await fsp.mkdir(path.join(homebrewDir, 'bin'), { recursive: true });
-    await fsp.symlink(path.join(repoDir, 'bin', 'brew'), path.join(homebrewDir, 'bin', 'brew'));
-    console.log('Running brew update...');
-    await execAsync(`${brewPath} update --force`);
-    console.log('Homebrew installed successfully');
-  } catch (err) {
-    console.error('Failed to install Homebrew:', err.message);
-    if (attempt < maxAttempts) {
-      const delay = Math.pow(2, attempt) * 1000; // Exponential backoff
-      console.log(`Retrying in ${delay / 1000} seconds...`);
-      setTimeout(() => ensureHomebrew(attempt + 1), delay);
-    } else {
-      console.error('Max attempts reached, Homebrew installation failed');
+    for (const entry of entries) {
+      const srcPath = path.join(SKELETON_DIR, entry.name);
+      const destPath = path.join(homeDir, entry.name);
+
+      try {
+        await fsp.access(destPath);
+        // Exists - check if it's an empty directory
+        if (entry.isDirectory() && await isDirEmpty(destPath)) {
+          console.log(`${entry.name} exists but is empty, copying contents inside...`);
+          await execAsync(`cp -r "${srcPath}/." "${destPath}/"`);
+        } else {
+          console.log(`Skipping ${entry.name} (already exists)`);
+        }
+      } catch {
+        // Doesn't exist, copy it
+        console.log(`Copying ${entry.name} to home...`);
+        if (entry.isDirectory()) {
+          await execAsync(`cp -r "${srcPath}" "${destPath}"`);
+        } else {
+          await fsp.copyFile(srcPath, destPath);
+        }
+      }
     }
+    console.log('Home directory initialized');
+  } catch (err) {
+    console.error('Error initializing home:', err.message);
   }
 }
 
@@ -618,8 +625,10 @@ server.on('upgrade', (req, socket, head) => {
   handleUpgrade(req, socket, head);
 });
 
+// Initialize home directory from skeleton
+initializeHome();
+
 ensureConfigDir();
-ensureHomebrew(); // Runs in background (async)
 
 // Check if already configured
 if (isConfigured()) {

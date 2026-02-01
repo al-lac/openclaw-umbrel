@@ -9,3 +9,4 @@ services:
       - "18789:18789"
     volumes:
       - $PWD/data:/data
+      - $PWD/data/linuxbrew:/home/linuxbrew
