@@ -120,8 +120,7 @@ function startOpenclaw() {
   }
 
   console.log('Starting OpenClaw gateway...');
-  openclawProcess = spawn('node', [
-    '/app/dist/index.js',
+  openclawProcess = spawn('openclaw', [
     'gateway',
     '--port', OPENCLAW_PORT.toString()
   ], {
