@@ -25,11 +25,6 @@ USER node
 RUN echo clear cache
 RUN /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
-# Set environment variables (needed?)
-ENV OPENCLAW_DATA_DIR=/data/.openclaw
-ENV OPENCLAW_GATEWAY_HOST=0.0.0.0
-ENV OPENCLAW_GATEWAY_PORT=18789
-
 # Copy setup UI server
 COPY --chown=node:node setup-ui/server.cjs /app/setup-server.cjs
 
