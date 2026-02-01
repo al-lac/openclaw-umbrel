@@ -26,7 +26,7 @@ RUN echo clear cache
 RUN /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
 # Copy setup UI server
-COPY --chown=node:node setup-ui/server.cjs /app/setup-server.cjs
+COPY --chown=node:node server.cjs /app/setup-server.cjs
 
 # Move home to skeleton
 RUN sudo mv /data /home-skeleton
