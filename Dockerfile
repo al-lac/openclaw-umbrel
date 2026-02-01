@@ -15,7 +15,7 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Install OpenClaw globally from npm
-RUN npm install -g openclaw@latest
+RUN npm install -g openclaw@2026.1.30
 
 # Copy setup UI server
 COPY --chown=node:node setup-ui/server.cjs /app/setup-server.cjs
