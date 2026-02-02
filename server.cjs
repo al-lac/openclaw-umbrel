@@ -456,7 +456,7 @@ function handleApiSetup(req, res) {
       if (data.telegramToken) env.TELEGRAM_BOT_TOKEN = data.telegramToken;
       if (data.discordToken) env.DISCORD_BOT_TOKEN = data.discordToken;
 
-      // Generate random token for gateway auth
+      // Generate a cryptographically secure random token for gateway auth
       const gatewayToken = crypto.randomBytes(32).toString("hex");
 
       // Also save token to env for the proxy to use
