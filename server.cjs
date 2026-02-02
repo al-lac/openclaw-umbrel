@@ -3,6 +3,7 @@ const net = require("net");
 const fs = require("fs");
 const fsp = require("fs").promises;
 const path = require("path");
+const crypto = require("crypto");
 const { spawn, exec } = require("child_process");
 const { promisify } = require("util");
 const execAsync = promisify(exec);
@@ -455,8 +456,8 @@ function handleApiSetup(req, res) {
       if (data.telegramToken) env.TELEGRAM_BOT_TOKEN = data.telegramToken;
       if (data.discordToken) env.DISCORD_BOT_TOKEN = data.discordToken;
 
-      // Fixed token - safe behind Umbrel's auth proxy
-      const gatewayToken = "openclaw-umbrel-token";
+      // Generate random token for gateway auth
+      const gatewayToken = crypto.randomBytes(32).toString("hex");
 
       // Also save token to env for the proxy to use
       env.OPENCLAW_GATEWAY_TOKEN = gatewayToken;
