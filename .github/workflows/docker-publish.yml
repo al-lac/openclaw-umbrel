@@ -21,6 +21,9 @@ jobs:
       - name: Login to GitHub Container Registry
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.repository_owner }}" --password-stdin
 
+      - name: Setup QEMU with credential support (fixes sudo in cross-arch builds)
+        run: docker run --rm --privileged multiarch/qemu-user-static --reset -p yes --credential yes
+
       - name: Setup Docker buildx
         run: docker buildx create --use
 
