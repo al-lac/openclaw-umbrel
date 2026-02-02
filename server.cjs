@@ -475,6 +475,9 @@ function handleApiSetup(req, res) {
         gateway: {
           mode: "local",
           controlUi: {
+            // This is safe on umbrelOS since we're behind the auth proxy and
+            // either accessing over a secure local network or e2e encrypted
+            // remotely via tailscale.
             allowInsecureAuth: true,
           },
           auth: {
