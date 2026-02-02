@@ -25,10 +25,10 @@ USER node
 RUN /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
 # Replace apt/apt-get with script telling openclaw to use brew
-RUN printf '#!/bin/bash\necho "Error: apt is not available. Please use brew instead." >&2\necho "Example: brew install <package>" >&2\nexit 1\n' > /usr/local/bin/use-brew \
-    && chmod +x /usr/local/bin/use-brew \
-    && ln -s /usr/local/bin/use-brew /usr/local/bin/apt \
-    && ln -s /usr/local/bin/use-brew /usr/local/bin/apt-get
+RUN printf '#!/bin/bash\necho "Error: apt is not available. Please use brew instead." >&2\necho "Example: brew install <package>" >&2\nexit 1\n' | sudo tee /usr/local/bin/use-brew \
+    && sudo chmod +x /usr/local/bin/use-brew \
+    && sudo ln -s /usr/local/bin/use-brew /usr/local/bin/apt \
+    && sudo ln -s /usr/local/bin/use-brew /usr/local/bin/apt-get
 
 # Copy setup UI server
 COPY --chown=node:node server.cjs /app/setup-server.cjs
