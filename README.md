@@ -10,6 +10,7 @@ This is a containerized version of OpenClaw with seamless onboarding on umbrelOS
 
 - A simple setup UI to configure your API keys (no interactive onboarding CLI)
 - Headless browser setup and configured out of the box
+- Sandboxing so OpenClaw runs in it's own environment that can't mess up other Umbrel apps
 - Automatic gateway token management
 - Homebrew pre-installed for OpenClaw to install additional tools configured in a way that will persist between app updates
 - apt/apt-get disabled with a message telling openclaw to use brew instead
