@@ -455,6 +455,11 @@ function handleApiSetup(req, res) {
 
       // Build minimal valid config
       const config = {
+        browser: {
+          headless: true,
+          noSandbox: true,
+          defaultProfile: "openclaw",
+        },
         agents: {
           defaults: {
             model: {
