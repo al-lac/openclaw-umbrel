@@ -1,22 +1,31 @@
 name: Docker Build and Push
 on:
-  push:
-    tags:
-      - "*"
+  workflow_run:
+    workflows:
+      - "Tag OpenClaw Version On Merge"
+    types:
+      - completed
 
 jobs:
   build:
+    if: github.event.workflow_run.conclusion == 'success'
     name: Build and push to GitHub Container Registry
     runs-on: ubuntu-22.04
     permissions:
       contents: read
       packages: write
     steps:
-      - name: Set TAG
-        run: |
-          echo "TAG=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
-
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          fetch-depth: 0
+
+      - name: Set TAG from Dockerfile
+        shell: bash
+        run: |
+          set -euo pipefail
+          tag=$(grep -oE 'openclaw@[0-9]+(\.[0-9]+)*' Dockerfile | head -n1 | cut -d'@' -f2)
+          echo "TAG=${tag}" >> "$GITHUB_ENV"
 
       - name: Login to GitHub Container Registry
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.repository_owner }}" --password-stdin
